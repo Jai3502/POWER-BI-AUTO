@@ -1,6 +1,19 @@
-flask
-pandas
-numpy
-plotly
-openpyxl
-xlrd
+# Core Framework & Server
+flask>=3.0.0
+werkzeug>=3.0.0
+waitress>=3.0.0
+gunicorn>=21.2.0; platform_system != "Windows"
+
+# Data Processing & Analysis
+pandas>=2.2.0
+numpy>=1.26.0
+openpyxl>=3.1.2
+xlrd>=2.0.1
+pyarrow>=15.0.0
+
+# Visualizations
+plotly>=5.18.0
+
+# Configuration & Testing
+python-dotenv>=1.0.0
+pytest>=8.0.0

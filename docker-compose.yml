@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  autobi:
+    build: .
+    container_name: autobi-app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=autobi-secure-random-token-2026
+      - MAX_CONTENT_LENGTH=52428800
+    volumes:
+      - autobi-uploads:/app/uploads
+      - autobi-cache:/app/cache
+      - autobi-data:/app/data
+      - autobi-logs:/app/logs
+
+volumes:
+  autobi-uploads:
+  autobi-cache:
+  autobi-data:
+  autobi-logs:
+

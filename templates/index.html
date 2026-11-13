@@ -1,160 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>AutoBI</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
-
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoBI - Automated Analytics & BI Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
-
-
 <body class="upload-body">
-
 
 <div class="upload-container">
 
     <div class="brand">
-
         <div class="brand-logo">
             <i class="bi bi-bar-chart-fill"></i>
         </div>
-
         <h1>AutoBI</h1>
-
     </div>
-
 
     <div class="upload-card">
-
         <div class="upload-icon">
-
             <i class="bi bi-file-earmark-spreadsheet"></i>
-
         </div>
 
-
-        <h2>
-            Turn Excel Into Insights
-        </h2>
-
-
+        <h2>Turn Data Into Instant Dashboards</h2>
         <p>
-            Upload your Excel file and AutoBI will
-            automatically analyze your data and
-            generate an interactive analytics dashboard.
+            Upload your Excel or CSV file. AutoBI automatically profiles your columns,
+            computes KPIs, and generates interactive Power BI-style charts.
         </p>
 
-
-        <form
-            action="{{ url_for('upload') }}"
-            method="POST"
-            enctype="multipart/form-data"
-            id="upload-form"
-        >
-
-
-            <label
-                for="file-input"
-                class="drop-zone"
-                id="drop-zone"
-            >
-
+        <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" id="upload-form">
+            <label for="file-input" class="drop-zone" id="drop-zone">
                 <i class="bi bi-cloud-arrow-up"></i>
-
-                <span id="file-label">
-                    Drag & drop Excel file here
-                </span>
-
-                <small>
-                    or click to browse
-                </small>
-
-                <input
-                    type="file"
-                    id="file-input"
-                    name="file"
-                    accept=".xlsx,.xls"
-                    required
-                >
-
+                <span id="file-label">Drag & drop your file here</span>
+                <small>Supported: .xlsx, .xls, .csv (Max 50MB)</small>
+                <input type="file" id="file-input" name="file" accept=".xlsx,.xls,.csv" required>
             </label>
 
-
-            <button
-                type="submit"
-                class="analyze-button"
-            >
-
+            <button type="submit" class="analyze-button" id="submit-btn">
                 <i class="bi bi-stars"></i>
-
-                Analyze & Build Dashboard
-
+                <span>Analyze & Build Dashboard</span>
             </button>
-
         </form>
 
-
-        <div class="features">
-
-            <span>
-                <i class="bi bi-check-circle"></i>
-                Automatic KPIs
-            </span>
-
-            <span>
-                <i class="bi bi-check-circle"></i>
-                Smart Charts
-            </span>
-
-            <span>
-                <i class="bi bi-check-circle"></i>
-                Dynamic Filters
-            </span>
-
+        <div id="loading-spinner" class="loading-state" style="display: none;">
+            <div class="spinner"></div>
+            <p>Analyzing dataset structure, profiling columns & generating charts...</p>
         </div>
 
+        <div class="features">
+            <span><i class="bi bi-check-circle-fill"></i> Automatic KPIs</span>
+            <span><i class="bi bi-check-circle-fill"></i> Smart Visuals</span>
+            <span><i class="bi bi-check-circle-fill"></i> Dynamic Slicers</span>
+            <span><i class="bi bi-check-circle-fill"></i> Data Export</span>
+        </div>
     </div>
+
+    {% if recent_files %}
+    <div class="recent-card">
+        <h3><i class="bi bi-clock-history"></i> Recent Dashboards</h3>
+        <div class="recent-list">
+            {% for item in recent_files %}
+            <a href="{{ url_for('dashboard', file_id=item.file_id) }}" class="recent-item">
+                <div class="recent-icon">
+                    <i class="bi bi-file-earmark-bar-graph"></i>
+                </div>
+                <div class="recent-details">
+                    <strong>{{ item.original_name }}</strong>
+                    <small>{{ (item.file_size / 1024)|round(1) }} KB &bull; {{ item.created_at[:10] }}</small>
+                </div>
+                <i class="bi bi-arrow-right"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
 </div>
 
-
 <script>
+const fileInput = document.getElementById("file-input");
+const fileLabel = document.getElementById("file-label");
+const dropZone = document.getElementById("drop-zone");
+const uploadForm = document.getElementById("upload-form");
+const submitBtn = document.getElementById("submit-btn");
+const loadingSpinner = document.getElementById("loading-spinner");
 
-const fileInput =
-    document.getElementById("file-input");
-
-const fileLabel =
-    document.getElementById("file-label");
-
-
-fileInput.addEventListener(
-    "change",
-    function () {
-
-        if (this.files.length > 0) {
-
-            fileLabel.textContent =
-                this.files[0].name;
-
-        }
-
+fileInput.addEventListener("change", function () {
+    if (this.files.length > 0) {
+        fileLabel.textContent = this.files[0].name;
+        dropZone.classList.add("has-file");
     }
-);
+});
 
+// Drag and drop visual cues
+["dragenter", "dragover"].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add("drag-active");
+    }, false);
+});
+
+["dragleave", "drop"].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("drag-active");
+    }, false);
+});
+
+dropZone.addEventListener("drop", (e) => {
+    if (e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        fileLabel.textContent = e.dataTransfer.files[0].name;
+        dropZone.classList.add("has-file");
+    }
+});
+
+uploadForm.addEventListener("submit", function () {
+    if (fileInput.files.length > 0) {
+        submitBtn.style.display = "none";
+        loadingSpinner.style.display = "flex";
+    }
+});
 </script>
 
-
 </body>
-
 </html>

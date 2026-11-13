@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ error_code }} - AutoBI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body class="upload-body">
+    <div class="upload-container" style="text-align: center;">
+        <div class="upload-card">
+            <div class="upload-icon" style="color: #ef4444; background: #fee2e2;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h1 style="font-size: 32px; margin-top: 15px; color: #1e293b;">{{ error_code }}</h1>
+            <h2 style="font-size: 20px; color: #475569; margin: 10px 0;">{{ error_title }}</h2>
+            <p style="color: #64748b; margin-bottom: 25px;">{{ error_message }}</p>
+            <a href="{{ url_for('index') }}" class="analyze-button" style="display: inline-block; text-decoration: none;">
+                <i class="bi bi-house-door-fill"></i> Return to Home
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+
